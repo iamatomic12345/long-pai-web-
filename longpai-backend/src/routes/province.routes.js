@@ -1,0 +1,13 @@
+const express = require("express");
+const asyncHandler = require("../utils/asyncHandler");
+const { requireAuth } = require("../middleware/auth");
+const provinceController = require("../controllers/province.controller");
+
+const router = express.Router();
+
+router.get("/", asyncHandler(provinceController.list));
+router.get("/visited", requireAuth, asyncHandler(provinceController.listVisited));
+router.post("/:id/visited", requireAuth, asyncHandler(provinceController.markVisited));
+router.delete("/:id/visited", requireAuth, asyncHandler(provinceController.unmarkVisited));
+
+module.exports = router;
