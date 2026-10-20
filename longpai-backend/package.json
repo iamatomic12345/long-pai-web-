@@ -8,7 +8,7 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "migrate": "node db/migrate.js",
-    "seed": "node db/seed/seed-provinces.js"
+    "seed": "node db/seed/seed-provinces.js && node db/seed/seed-tours.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

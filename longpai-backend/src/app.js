@@ -6,6 +6,9 @@ const { passport } = require("./config/passport");
 const authRoutes = require("./routes/auth.routes");
 const provinceRoutes = require("./routes/province.routes");
 const storyRoutes = require("./routes/story.routes");
+const bookingRoutes = require("./routes/booking.routes");
+const couponRoutes = require("./routes/coupon.routes");
+const favoriteRoutes = require("./routes/favorite.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
@@ -22,6 +25,9 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/provinces", provinceRoutes);
 app.use("/api/stories", storyRoutes);
+app.use("/api/bookings", bookingRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/favorites", favoriteRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

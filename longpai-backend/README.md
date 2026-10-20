@@ -9,7 +9,7 @@ data, per-user visited-province tracking, and traveler stories.
 npm install
 cp .env.example .env   # then edit DATABASE_URL / JWT_SECRET
 npm run migrate        # creates tables
-npm run seed           # loads the 77 provinces
+npm run seed           # loads the 77 provinces and the tour catalog
 npm start               # or: npm run dev (auto-restart)
 ```
 
@@ -64,10 +64,26 @@ shared store (e.g. `connect-pg-simple`) before running multiple processes.
 | GET    | /api/stories                | no   | traveler story feed, newest first (`?limit=&before=`) |
 | POST   | /api/stories                | yes  | `{ provinceId?, caption?, emoji?, image }` → new story (+20 points) |
 | DELETE | /api/stories/:id            | yes  | delete your own story (403 if not the owner, -20 points floored at 0) |
+| GET    | /api/bookings               | yes  | your bookings, oldest first (with tour name/province) |
+| POST   | /api/bookings               | yes  | `{ tourId, pax, date, contactName, phone }` → booking; total and points (1 per ฿20) are computed server-side |
+| GET    | /api/coupons                | yes  | your redeemed coupons |
+| POST   | /api/coupons/redeem         | yes  | `{ tierId }` → coupon with a server-generated code; deducts the tier cost atomically (400 if not enough points) |
+| GET    | /api/favorites              | yes  | your favorite tour ids |
+| POST   | /api/favorites/:tourId      | yes  | add a favorite (idempotent, 404 for an unknown tour) |
+| DELETE | /api/favorites/:tourId      | yes  | remove a favorite |
 
 `image` is expected as a data URL string (matching the frontend's client-side
 downscaled JPEG output), stored as-is. For heavier traffic, swap `image_data`
 for an object-storage URL instead of storing base64 in Postgres.
+
+## Tours, bookings, and rewards
+
+The tour catalog (`tours` table) is seeded from `db/seed/tours-data.js`, which
+mirrors `LP_DATA.TOURS` in the frontend — keep the ids and prices in sync when
+a tour changes. Bookings are priced from that table, so the client's
+`total`/`earn` are never trusted. Reward tiers live in `src/config/rewards.js`
+(mirroring the frontend's `REWARD_TIERS`); redeeming uses a conditional
+`UPDATE ... WHERE points >= cost` so concurrent redeems can't overspend.
 
 ## GPS check-in verification
 

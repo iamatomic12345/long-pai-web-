@@ -1,0 +1,20 @@
+// mirrors LP_DATA.TOURS in the frontend — the server prices bookings from here,
+// so keep id/price in sync if a tour changes
+module.exports = [
+  { id: "t1", name: "ล่องเรือชมอ่าวพังงา เกาะปันหยี", province: "พังงา", region: "south", price: 1290 },
+  { id: "t2", name: "เดินป่าศึกษาธรรมชาติเขาใหญ่", province: "นครราชสีมา", region: "northeast", price: 990 },
+  { id: "t3", name: "เวิร์กช็อปทำโคมล้านนา เชียงใหม่", province: "เชียงใหม่", region: "north", price: 650 },
+  { id: "t4", name: "ทัวร์ชิมอาหารเมืองเก่าภูเก็ต", province: "ภูเก็ต", region: "south", price: 890 },
+  { id: "t5", name: "ปั่นจักรยานรอบเกาะเมืองอยุธยา", province: "พระนครศรีอยุธยา", region: "central", price: 550 },
+  { id: "t6", name: "ดำน้ำดูปะการังเกาะเต่า", province: "สุราษฎร์ธานี", region: "south", price: 1690 },
+  { id: "t7", name: "นั่งรถรางชมทุ่งดอกกระเจียว", province: "ชัยภูมิ", region: "northeast", price: 450 },
+  { id: "t8", name: "ตักบาตรเช้า & ตลาดเช้าเมืองน่าน", province: "น่าน", region: "north", price: 390 },
+  { id: "t9", name: "ผจญภัยล่องแก่งน้ำว้า", province: "น่าน", region: "north", price: 1450 },
+  { id: "t10", name: "เรียนทำอาหารใต้ที่ตรัง", province: "ตรัง", region: "south", price: 750 },
+  { id: "t11", name: "ขี่ช้างอาบน้ำ ดูแลช้างเชิงอนุรักษ์", province: "สุรินทร์", region: "northeast", price: 1190 },
+  { id: "t12", name: "ชมพระอาทิตย์ขึ้นทะเลหมอกเขาค้อ", province: "เพชรบูรณ์", region: "north", price: 690 },
+  { id: "t13", name: "ล่องเรือคลองดำเนินสะดวก", province: "ราชบุรี", region: "west", price: 480 },
+  { id: "t14", name: "เที่ยวเบตง ชมทะเลหมอกอัยเยอร์เวง", province: "ยะลา", region: "south", price: 1350 },
+  { id: "t15", name: "เดินป่าภูกระดึง พิชิตหลังแป", province: "เลย", region: "northeast", price: 1250 },
+  { id: "t16", name: "ทัวร์ชุมชนเกาะยาวน้อย", province: "พังงา", region: "south", price: 980 },
+];
