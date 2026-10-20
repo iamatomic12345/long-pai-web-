@@ -15,7 +15,14 @@
     "license_url": "https://creativecommons.org/licenses/by/4.0",
     "source": "https://commons.wikimedia.org/wiki/File:Khao_Yai,_Thailand,_Haew_Suwat_Waterfall.jpg"
   },
-  "t3": null,
+  "t3": {
+    "image": "images/tours/t3.jpg",
+    "file": "File:Yi Peng lanterns in Chiang Mai (11067469754).jpg",
+    "author": "Nik Cyclist from Bangkok, Thailand",
+    "license": "CC BY 2.0",
+    "license_url": "https://creativecommons.org/licenses/by/2.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Yi_Peng_lanterns_in_Chiang_Mai_(11067469754).jpg"
+  },
   "t4": {
     "image": "images/tours/t4.jpg",
     "file": "File:Thalang Road, Old Phuket Town.jpg",
@@ -48,8 +55,22 @@
     "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
     "source": "https://commons.wikimedia.org/wiki/File:1105_-_Pa_Hin_Ngam_National_Park.jpg"
   },
-  "t8": null,
-  "t9": null,
+  "t8": {
+    "image": "images/tours/t8.jpg",
+    "file": "File:Wat Phumin 2.jpg",
+    "author": "Manoonp",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+    "source": "https://commons.wikimedia.org/wiki/File:Wat_Phumin_2.jpg"
+  },
+  "t9": {
+    "image": "images/tours/t9.jpg",
+    "file": "File:La rivière Nan, Nan2.jpg",
+    "author": "Ellnik",
+    "license": "CC BY-SA 3.0",
+    "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "source": "https://commons.wikimedia.org/wiki/File:La_rivi%C3%A8re_Nan,_Nan2.jpg"
+  },
   "t10": {
     "image": "images/tours/t10.jpg",
     "file": "File:Kaeng tai pla.JPG",
