@@ -15,6 +15,22 @@ npm start               # or: npm run dev (auto-restart)
 
 Requires a running PostgreSQL instance reachable at `DATABASE_URL`.
 
+## Pointing the frontend at the API
+
+`long pai (standalone).html` picks its API base without code changes:
+
+1. `window.LP_API_BASE`, if set before the bundle loads — add
+   `<script>window.LP_API_BASE = "https://api.example.com"</script>` to the
+   page's `<head>`;
+2. otherwise the page's own origin when it's served from a real host (API
+   reverse-proxied under the same domain);
+3. otherwise `http://localhost:4000` when opened from `localhost`,
+   `127.0.0.1`, or `file://`.
+
+Guests use the app entirely offline (localStorage); once logged in, the API is
+the source of truth for points, check-ins, stories, bookings, coupons, and
+favorites.
+
 ## Auth
 
 Send `Authorization: Bearer <token>` on protected routes. Tokens are issued by
