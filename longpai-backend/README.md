@@ -59,7 +59,7 @@ shared store (e.g. `connect-pg-simple`) before running multiple processes.
 | GET    | /api/auth/facebook/callback | no   | Facebook redirects here → redirects to `FRONTEND_URL#token=...` |
 | GET    | /api/provinces              | no   | all 77 provinces (name, region, spot, grid position) |
 | GET    | /api/provinces/visited      | yes  | provinces the current user has checked in |
-| POST   | /api/provinces/:id/visited  | yes  | mark a province visited (+50 points, idempotent) |
+| POST   | /api/provinces/:id/visited  | yes  | `{ lat, lng }` → mark visited if within 50km of the province (+50 points, idempotent) |
 | DELETE | /api/provinces/:id/visited  | yes  | unmark a province (-50 points, floored at 0) |
 | GET    | /api/stories                | no   | traveler story feed, newest first (`?limit=&before=`) |
 | POST   | /api/stories                | yes  | `{ provinceId?, caption?, emoji?, image }` → new story (+20 points) |
@@ -68,3 +68,14 @@ shared store (e.g. `connect-pg-simple`) before running multiple processes.
 `image` is expected as a data URL string (matching the frontend's client-side
 downscaled JPEG output), stored as-is. For heavier traffic, swap `image_data`
 for an object-storage URL instead of storing base64 in Postgres.
+
+## GPS check-in verification
+
+`POST /api/provinces/:id/visited` requires `lat`/`lng` in the body (the user's
+current position) and rejects the check-in with `400 ตำแหน่งไม่ตรงกับจังหวัดนี้`
+if it's more than 50km (Haversine great-circle distance) from that province's
+seeded centroid (`provinces.latitude`/`longitude`). The submitted coordinates
+are stored alongside the visit in `user_visited_provinces.latitude`/`longitude`.
+Unmarking a visit (`DELETE`) doesn't require location — it's just removing a
+record, not proving presence. Province centroids come from
+[dataengineercafe/thailand-province-latitude-longitude](https://github.com/dataengineercafe/thailand-province-latitude-longitude).
