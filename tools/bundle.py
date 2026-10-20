@@ -5,6 +5,10 @@ as JSON: { uuid: { mime, compressed, data } }, where data is base64 of the
 (optionally gzipped) file. This tool extracts the script entries to a working
 folder and writes edited ones back under the same uuid, in the same format.
 
+The page markup itself lives in <script type="__bundler/template"> as a JSON
+string (with "</" escaped as "<\\u002F"); it is extracted as template.html so
+script tags, meta tags, etc. can be edited the same way.
+
 Usage:
   py -I tools/bundle.py unpack <html> <workdir>
   py -I tools/bundle.py pack   <html> <workdir>
@@ -19,6 +23,8 @@ import pathlib
 import sys
 
 MANIFEST_OPEN = '<script type="__bundler/manifest">'
+TEMPLATE_OPEN = '<script type="__bundler/template">'
+TEMPLATE_FILE = "template.html"
 SCRIPT_MIMES = {"application/javascript", "text/javascript", "text/jsx"}
 
 
@@ -26,6 +32,17 @@ def read_manifest(html):
     start = html.index(MANIFEST_OPEN) + len(MANIFEST_OPEN)
     end = html.index("</script>", start)
     return json.loads(html[start:end]), start, end
+
+
+def read_template(html):
+    start = html.index(TEMPLATE_OPEN) + len(TEMPLATE_OPEN)
+    end = html.index("</script>", start)
+    return json.loads(html[start:end]), start, end
+
+
+def encode_template(text):
+    # same escaping the bundler uses, so an unchanged template round-trips byte-for-byte
+    return json.dumps(text, ensure_ascii=False).replace("</", "<\\u002F")
 
 
 def decode(entry):
@@ -53,6 +70,9 @@ def unpack(html_path, workdir):
         out.write_bytes(decode(entry))
         first = out.read_text(encoding="utf-8", errors="replace").lstrip()[:70].splitlines()[0]
         print(f"{out.name}  {first}")
+    template, _, _ = read_template(html)
+    (workdir / TEMPLATE_FILE).write_text(template, encoding="utf-8", newline="")
+    print(f"{TEMPLATE_FILE}  page markup")
 
 
 def pack(html_path, workdir):
@@ -77,7 +97,18 @@ def pack(html_path, workdir):
         changed += 1
         print(f"packed {src.name}")
     json.loads(section)  # sanity check: manifest is still valid JSON
-    html_path.write_text(html[:start] + section + html[end:], encoding="utf-8", newline="")
+    html = html[:start] + section + html[end:]
+
+    template_src = workdir / TEMPLATE_FILE
+    if template_src.exists():
+        template, t_start, t_end = read_template(html)
+        edited = template_src.read_text(encoding="utf-8", newline="")
+        if edited != template:
+            html = html[:t_start] + encode_template(edited) + html[t_end:]
+            changed += 1
+            print(f"packed {TEMPLATE_FILE}")
+
+    html_path.write_text(html, encoding="utf-8", newline="")
     print(f"{changed} file(s) updated")
 
 
