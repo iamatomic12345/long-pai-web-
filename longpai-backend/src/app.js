@@ -11,21 +11,31 @@ const couponRoutes = require("./routes/coupon.routes");
 const favoriteRoutes = require("./routes/favorite.routes");
 const meRoutes = require("./routes/me.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
-const { UPLOAD_ROOT } = require("./middleware/storyUpload");
+const { UPLOAD_ROOT } = require("./services/storyStorage");
 
 const app = express();
 
-const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",").map((o) => o.trim()).filter(Boolean);
+// browsers may call the API only from the frontend's own origin (FRONTEND_URL,
+// which also tells OAuth where to send people back). Non-browser clients are unaffected
+function frontendOrigin() {
+  try {
+    return new URL(process.env.FRONTEND_URL).origin;
+  } catch {
+    console.warn("FRONTEND_URL is missing or invalid — cross-origin browser requests will be refused");
+    return false;
+  }
+}
 
 app.use(helmet());
-app.use(cors({ origin: allowedOrigins.length ? allowedOrigins : true }));
+app.use(cors({ origin: frontendOrigin() }));
 app.use(express.json({ limit: "5mb" }));
 app.use(passport.initialize());
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
-// uploaded story photos; the frontend is usually served from another origin,
-// so relax helmet's same-origin resource policy for these files only
+// story photos stored on local disk (dev, or stories posted before Supabase Storage);
+// the frontend is usually served from another origin, so relax helmet's same-origin
+// resource policy for these files only
 app.use("/uploads", express.static(UPLOAD_ROOT, {
   index: false,
   setHeaders: (res) => res.set("Cross-Origin-Resource-Policy", "cross-origin"),

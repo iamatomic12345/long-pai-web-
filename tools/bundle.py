@@ -1,4 +1,4 @@
-"""Unpack / repack the JS sources embedded in "long pai (standalone).html".
+"""Unpack / repack the JS sources embedded in index.html (formerly "long pai (standalone).html").
 
 The standalone HTML keeps every script in <script type="__bundler/manifest">
 as JSON: { uuid: { mime, compressed, data } }, where data is base64 of the
