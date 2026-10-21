@@ -9,7 +9,9 @@ const storyRoutes = require("./routes/story.routes");
 const bookingRoutes = require("./routes/booking.routes");
 const couponRoutes = require("./routes/coupon.routes");
 const favoriteRoutes = require("./routes/favorite.routes");
+const meRoutes = require("./routes/me.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
+const { UPLOAD_ROOT } = require("./middleware/storyUpload");
 
 const app = express();
 
@@ -22,12 +24,20 @@ app.use(passport.initialize());
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
+// uploaded story photos; the frontend is usually served from another origin,
+// so relax helmet's same-origin resource policy for these files only
+app.use("/uploads", express.static(UPLOAD_ROOT, {
+  index: false,
+  setHeaders: (res) => res.set("Cross-Origin-Resource-Policy", "cross-origin"),
+}));
+
 app.use("/api/auth", authRoutes);
 app.use("/api/provinces", provinceRoutes);
 app.use("/api/stories", storyRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/favorites", favoriteRoutes);
+app.use("/api/me", meRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

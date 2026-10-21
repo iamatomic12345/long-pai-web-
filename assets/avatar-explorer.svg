@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- long pai — cartoon explorer avatar (safari hat, backpack, binoculars, smile) -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd38a"/>
+      <stop offset="1" stop-color="#f08a3e"/>
+    </linearGradient>
+    <clipPath id="c"><circle cx="100" cy="100" r="100"/></clipPath>
+  </defs>
+  <g clip-path="url(#c)">
+    <rect width="200" height="200" fill="url(#bg)"/>
+    <!-- distant hills + sun -->
+    <circle cx="160" cy="48" r="16" fill="#fff3d1" opacity=".9"/>
+    <path d="M0 150 Q40 118 80 140 T160 132 T200 140 V200 H0Z" fill="#3aa17e" opacity=".55"/>
+
+    <!-- backpack, peeking out behind both shoulders -->
+    <path d="M40 200 V156 Q40 128 68 126 H132 Q160 128 160 156 V200Z" fill="#e07a3c"/>
+    <path d="M40 160 Q40 132 66 130 L72 150 Q52 152 50 176 V200 H40Z" fill="#c4612a"/>
+    <path d="M160 160 Q160 132 134 130 L128 150 Q148 152 150 176 V200 H160Z" fill="#c4612a"/>
+
+    <!-- body: khaki shirt with backpack straps -->
+    <path d="M38 200 Q42 150 100 146 Q158 150 162 200Z" fill="#c9a66b"/>
+    <path d="M70 152 L62 200 M130 152 L138 200" stroke="#8a5a2b" stroke-width="9" stroke-linecap="round"/>
+    <path d="M100 150 V200" stroke="#a9874f" stroke-width="2.5"/>
+    <circle cx="100" cy="170" r="2.6" fill="#7a5a2f"/>
+    <circle cx="100" cy="186" r="2.6" fill="#7a5a2f"/>
+
+    <!-- scarf -->
+    <path d="M74 140 Q100 158 126 140 L124 152 Q100 168 76 152Z" fill="#e2483b"/>
+    <path d="M114 150 L124 176 L112 172Z" fill="#c23a2e"/>
+
+    <!-- neck + head -->
+    <rect x="89" y="124" width="22" height="20" rx="8" fill="#e9a77a"/>
+    <ellipse cx="62" cy="100" rx="9" ry="11" fill="#e9a77a"/>
+    <ellipse cx="138" cy="100" rx="9" ry="11" fill="#e9a77a"/>
+    <ellipse cx="100" cy="96" rx="38" ry="40" fill="#f2b98d"/>
+
+    <!-- hair peeking under the hat -->
+    <path d="M64 82 Q70 66 86 70 Q80 78 82 86 Q72 80 64 92Z" fill="#3b2418"/>
+    <path d="M136 82 Q130 66 114 70 Q120 78 118 86 Q128 80 136 92Z" fill="#3b2418"/>
+
+    <!-- face -->
+    <ellipse cx="85" cy="98" rx="5" ry="6.5" fill="#2b1a12"/>
+    <ellipse cx="115" cy="98" rx="5" ry="6.5" fill="#2b1a12"/>
+    <circle cx="87" cy="95.5" r="1.8" fill="#fff"/>
+    <circle cx="117" cy="95.5" r="1.8" fill="#fff"/>
+    <path d="M77 86 Q85 82 92 86 M108 86 Q115 82 123 86" stroke="#3b2418" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <ellipse cx="74" cy="112" rx="7" ry="4.5" fill="#ff8f7a" opacity=".55"/>
+    <ellipse cx="126" cy="112" rx="7" ry="4.5" fill="#ff8f7a" opacity=".55"/>
+    <path d="M98 104 Q100 108 103 105" stroke="#c98260" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <path d="M88 116 Q100 128 112 116 Q100 121 88 116Z" fill="#8c2f24" stroke="#8c2f24" stroke-width="2" stroke-linejoin="round"/>
+
+    <!-- safari hat -->
+    <ellipse cx="100" cy="72" rx="62" ry="13" fill="#b88a4a"/>
+    <path d="M60 72 Q60 30 100 30 Q140 30 140 72Z" fill="#d6ab66"/>
+    <path d="M60.5 64 Q100 74 139.5 64 L140 72 Q100 82 60 72Z" fill="#6b4423"/>
+    <path d="M78 44 Q100 36 122 44" stroke="#e8c58a" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <!-- compass badge on the hat band -->
+    <circle cx="124" cy="70" r="7" fill="#f6d36b" stroke="#6b4423" stroke-width="2"/>
+    <path d="M124 64.5 L126 70 L124 75.5 L122 70Z" fill="#e2483b"/>
+
+    <!-- binoculars hanging on the chest -->
+    <path d="M82 150 Q100 166 118 150" stroke="#3b2418" stroke-width="2.4" fill="none"/>
+    <g transform="translate(100 172)">
+      <rect x="-20" y="-9" width="17" height="22" rx="6" fill="#2f3a44"/>
+      <rect x="3" y="-9" width="17" height="22" rx="6" fill="#2f3a44"/>
+      <rect x="-4" y="-4" width="8" height="9" rx="2" fill="#1f272e"/>
+      <circle cx="-11.5" cy="9" r="5" fill="#7fc4e8"/>
+      <circle cx="11.5" cy="9" r="5" fill="#7fc4e8"/>
+      <circle cx="-13" cy="7.5" r="1.6" fill="#fff"/>
+      <circle cx="10" cy="7.5" r="1.6" fill="#fff"/>
+    </g>
+  </g>
+</svg>
