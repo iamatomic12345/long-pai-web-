@@ -13,3 +13,6 @@ index.backup-*.html
 
 # story photos saved to local disk
 uploads/
+
+# dependencies
+node_modules/

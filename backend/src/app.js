@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -13,6 +15,9 @@ const meRoutes = require("./routes/me.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 const { UPLOAD_ROOT } = require("./services/storyStorage");
 
+// the web page lives in ../frontend; serving it here puts the whole app on one origin
+const FRONTEND_DIR = path.join(__dirname, "..", "..", "frontend");
+
 const app = express();
 
 // browsers may call the API only from the frontend's own origin (FRONTEND_URL,
@@ -26,7 +31,8 @@ function frontendOrigin() {
   }
 }
 
-app.use(helmet());
+// no CSP: the bundled page unpacks its scripts at runtime (blob: URLs, in-browser Babel)
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: frontendOrigin() }));
 app.use(express.json({ limit: "5mb" }));
 app.use(passport.initialize());
@@ -48,6 +54,10 @@ app.use("/api/bookings", bookingRoutes);
 app.use("/api/coupons", couponRoutes);
 app.use("/api/favorites", favoriteRoutes);
 app.use("/api/me", meRoutes);
+
+if (fs.existsSync(path.join(FRONTEND_DIR, "index.html"))) {
+  app.use(express.static(FRONTEND_DIR));
+}
 
 app.use(notFound);
 app.use(errorHandler);

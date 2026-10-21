@@ -16,29 +16,33 @@ npm start               # or: npm run dev (auto-restart)
 Requires a running PostgreSQL instance reachable at `DATABASE_URL`. Every
 variable is listed (without values) in `.env.example`.
 
-## Deploying (e.g. Render + Supabase)
+## Deploying (Railway + Supabase)
 
-- **Database**: Supabase Postgres — set `DATABASE_URL` to its connection
-  string with `?sslmode=no-verify`, then run `npm run migrate` and
-  `npm run seed` once against it.
-- **Story photos**: create a *public* Supabase Storage bucket (default name
-  `stories`) and set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and
-  optionally `SUPABASE_BUCKET`. Without them photos go to local `uploads/`,
-  which Render wipes on every deploy.
-- **Backend**: `npm start`; it listens on `PORT` (Render sets it). Set
+See the [root README](../README.md#deploy-on-railway-from-github). In short:
+
+- **Database**: Supabase Postgres — `DATABASE_URL` is its Session pooler URI
+  with `?sslmode=no-verify`. Railway runs `npm run migrate` and `npm run seed`
+  before every deploy (both are safe to re-run).
+- **Story photos**: a *public* Supabase Storage bucket (default name
+  `stories`) plus `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and optionally
+  `SUPABASE_BUCKET`. Without them photos go to local `uploads/`, which is
+  wiped on every deploy.
+- **Server**: `npm start` listens on `PORT` (Railway sets it). Set
   `NODE_ENV=production` and `FRONTEND_URL` to the deployed `index.html`.
-- **Frontend**: serve the project root as static files (`index.html`,
-  `assets/`, `images/`, `data/`) and set the backend URL in the one config line
-  in `index.html`'s `<head>`: `window.LONGPAI_API = "https://your-api…"`.
 
-## Pointing the frontend at the API
+## Serving the frontend
+
+The API also serves `../frontend/` as static files (`/` → `index.html`), so one
+process hosts the whole app. When `frontend/` isn't next to `backend/` the API
+runs on its own.
 
 `index.html` picks its API base without code changes:
 
 1. `window.LONGPAI_API`, set in the deploy-config line at the top of
-   `index.html`'s `<head>` (`window.LP_API_BASE` still works too);
-2. otherwise the page's own origin when it's served from a real host (API
-   reverse-proxied under the same domain);
+   `index.html`'s `<head>` — only needed when the page is hosted somewhere
+   other than this server;
+2. otherwise the page's own origin when it's served from a real host (the
+   normal case — this server);
 3. otherwise `http://localhost:4000` when opened from `localhost`,
    `127.0.0.1`, or `file://`.
 
@@ -62,11 +66,11 @@ Send `Authorization: Bearer <token>` on protected routes. Tokens are issued by
    that provider (its routes respond `501`).
 3. Set `FRONTEND_URL` to wherever `index.html` is served — **must be
    http/https**, not `file://` (browsers block server redirects to local
-   files). For local testing: `python3 -m http.server 8080` from the project
-   folder, then `FRONTEND_URL=http://localhost:8080/index.html`. Its origin is
-   also the only one CORS allows to call the API from a browser. (The old
-   `long pai (standalone).html` now just forwards to `index.html`, so an
-   older `FRONTEND_URL` keeps working until you update it.)
+   files). Locally that's `FRONTEND_URL=http://localhost:4000/index.html`
+   (this server). Its origin is also the only other one CORS allows to call
+   the API from a browser. (`frontend/long pai (standalone).html` just
+   forwards to `index.html`, so an older `FRONTEND_URL` keeps working until
+   you update it.)
 4. Flow: the frontend's "เข้าสู่ระบบด้วย Google/Facebook" buttons send the
    browser to `GET /api/auth/google` (or `/facebook`) → provider consent screen
    → `GET /api/auth/*/callback` → the backend finds-or-creates the user by
@@ -92,7 +96,7 @@ shared store (e.g. `connect-pg-simple`) before running multiple processes.
 | GET    | /api/auth/google/callback   | no   | Google redirects here → redirects to `FRONTEND_URL#token=...` |
 | GET    | /api/auth/facebook          | no   | redirect to Facebook consent screen (501 if not configured) |
 | GET    | /api/auth/facebook/callback | no   | Facebook redirects here → redirects to `FRONTEND_URL#token=...` |
-| GET    | /api/provinces              | no   | all 77 provinces (name, region, spot, grid position) |
+| GET    | /api/provinces              | no   | all 77 provinces (name, region, spot, …) |
 | GET    | /api/provinces/visited      | yes  | provinces the current user has checked in |
 | POST   | /api/provinces/:id/visited  | yes  | `{ lat, lng }` → mark visited if within 50km of the province (+50 points, idempotent) |
 | DELETE | /api/provinces/:id/visited  | yes  | unmark a province (-50 points, floored at 0) |

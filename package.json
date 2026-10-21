@@ -1,0 +1,15 @@
+{
+  "name": "longpai",
+  "private": true,
+  "description": "Long Pai — frontend/ (static page) + backend/ (Express API that also serves frontend/)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "postinstall": "npm ci --prefix backend --omit=dev",
+    "start": "npm start --prefix backend",
+    "dev": "npm run dev --prefix backend",
+    "migrate": "npm run migrate --prefix backend",
+    "seed": "npm run seed --prefix backend"
+  }
+}
