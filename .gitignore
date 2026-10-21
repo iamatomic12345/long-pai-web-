@@ -1,3 +1,15 @@
 .claude/
 long pai (standalone).backup-*.html
 index.backup-*.html
+
+# editor swap files (vim swaps of .env would leak secrets)
+*.swp
+*.swo
+
+# secrets: .env and any variant (.env.save from nano, .env.local, …) — but keep the template
+.env
+.env.*
+!.env.example
+
+# story photos saved to local disk
+uploads/
