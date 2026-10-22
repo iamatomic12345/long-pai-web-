@@ -22,9 +22,11 @@ const FRONTEND_DIR = path.join(__dirname, "..", "..", "frontend");
 
 const app = express();
 
-// behind Render's HTTPS proxy: trust X-Forwarded-Proto so the secure OAuth session
-// cookie is actually set in production
-app.set("trust proxy", 1);
+// Render puts two proxies in front of the app (Cloudflare, then Render's load balancer).
+// Trusting exactly those two hops makes req.ip the visitor's address (rate limits are
+// per IP) and X-Forwarded-Proto sets the secure OAuth cookie. Anything a client puts
+// in X-Forwarded-For itself sits further left and is ignored
+app.set("trust proxy", 2);
 
 // browsers may call the API only from the frontend's own origin (FRONTEND_URL,
 // which also tells OAuth where to send people back). Non-browser clients are unaffected
