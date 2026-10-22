@@ -27,3 +27,26 @@ test("the terms cover the required points in both languages", async () => {
     assert.ok(html.includes(s), s);
   }
 });
+
+test("an unknown page gets the HTML 404 page with a link home", async () => {
+  const res = await fetch(base + "/no-such-page", { headers: { Accept: "text/html" } });
+  assert.equal(res.status, 404);
+  assert.match(res.headers.get("content-type"), /text\/html/);
+  const html = await res.text();
+  assert.match(html, /ไม่พบหน้านี้/);
+  assert.match(html, /<a class="btn btn-primary" href="\/">/);
+});
+
+test("unknown /api paths still answer JSON, even for a browser", async () => {
+  for (const p of ["/api/nope", "/api/stories/1/nope"]) {
+    const res = await fetch(base + p, { headers: { Accept: "text/html" } });
+    assert.equal(res.status, 404);
+    assert.deepEqual(await res.json(), { error: "Not found" });
+  }
+});
+
+test("a non-browser client gets JSON for an unknown page", async () => {
+  const res = await fetch(base + "/no-such-page", { headers: { Accept: "application/json" } });
+  assert.equal(res.status, 404);
+  assert.deepEqual(await res.json(), { error: "Not found" });
+});

@@ -1,4 +1,14 @@
+const path = require("path");
+
+const NOT_FOUND_PAGE = path.join(__dirname, "../pages/not-found.html");
+
+// the API (and anything that isn't a browser asking for a page) gets JSON;
+// a mistyped page URL gets a 404 page that looks like the app
 function notFound(req, res) {
+  const isApi = req.path === "/api" || req.path.startsWith("/api/");
+  if (!isApi && req.method === "GET" && req.accepts(["html", "json"]) === "html") {
+    return res.status(404).sendFile(NOT_FOUND_PAGE);
+  }
   res.status(404).json({ error: "Not found" });
 }
 
