@@ -15,6 +15,7 @@ const meRoutes = require("./routes/me.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 const { UPLOAD_ROOT } = require("./services/storyStorage");
 const { apiLimiter } = require("./middleware/rateLimit");
+const { pool } = require("./config/db");
 
 // the web page lives in ../frontend; serving it here puts the whole app on one origin
 const FRONTEND_DIR = path.join(__dirname, "..", "..", "frontend");
@@ -42,7 +43,25 @@ app.use(cors({ origin: frontendOrigin() }));
 app.use(express.json({ limit: "5mb" }));
 app.use(passport.initialize());
 
-app.get("/health", (req, res) => res.json({ ok: true }));
+// pinged by Render's health check and an uptime monitor: a trivial query proves the
+// database is reachable (and counts as activity, which keeps a free Supabase project
+// from pausing). 503 when it isn't, or doesn't answer within 5 seconds
+const HEALTH_DB_TIMEOUT_MS = 5000;
+app.get("/health", async (req, res) => {
+  let timer;
+  try {
+    await Promise.race([
+      pool.query("SELECT 1"),
+      new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("timeout")), HEALTH_DB_TIMEOUT_MS); }),
+    ]);
+    res.json({ ok: true, db: "ok" });
+  } catch (err) {
+    console.error("health check: database unreachable:", err.message);
+    res.status(503).json({ ok: false, db: "unreachable" });
+  } finally {
+    clearTimeout(timer);
+  }
+});
 
 // privacy policy and data-deletion instructions (linked from the Google/Facebook app settings)
 const LEGAL_DIR = path.join(__dirname, "legal");
