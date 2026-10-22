@@ -16,3 +16,7 @@ uploads/
 
 # dependencies
 node_modules/
+
+# database backups (kept outside the repo by default, but never commit one)
+longpai-backups/
+*.sql.bak

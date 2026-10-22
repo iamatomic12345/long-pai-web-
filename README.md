@@ -42,3 +42,29 @@ generates `JWT_SECRET` / `SESSION_SECRET`.
 
 Every push to `master` redeploys automatically. The free plan sleeps after 15 minutes
 idle, so the first visit after that takes about a minute.
+
+## Backups
+
+`backend/scripts/backup-db.ps1` (Windows) and `backend/scripts/backup-db.sh` (WSL/Linux)
+dump the `public` schema of the Supabase database to
+`C:\Users\thiti\Downloads\longpai-backups\longpai-YYYY-MM-DD_HHmm.sql`, outside the repo.
+They ask for the connection string with hidden input (or use `DATABASE_URL` if set);
+use the Session pooler URI. They need `pg_dump` with the same or a newer major version
+than Supabase's Postgres (Supabase → Database → Settings shows it):
+Windows: PostgreSQL installer → "Command Line Tools" only; WSL: `postgresql-client-<version>`
+from the PostgreSQL apt repository.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend\scripts\backup-db.ps1
+```
+```bash
+bash backend/scripts/backup-db.sh
+```
+
+Restore (drops and recreates every table in `public`, then loads the data):
+
+```bash
+psql "<connection string, sslmode=require>" -v ON_ERROR_STOP=1 -f longpai-YYYY-MM-DD_HHmm.sql
+```
+
+Story photos live in Supabase Storage and are not in the .sql file.
