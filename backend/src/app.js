@@ -43,6 +43,11 @@ app.use(passport.initialize());
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 
+// privacy policy and data-deletion instructions (linked from the Google/Facebook app settings)
+const LEGAL_DIR = path.join(__dirname, "legal");
+app.get("/privacy", (req, res) => res.sendFile(path.join(LEGAL_DIR, "privacy.html")));
+app.get("/data-deletion", (req, res) => res.sendFile(path.join(LEGAL_DIR, "data-deletion.html")));
+
 // story photos stored on local disk (dev, or stories posted before Supabase Storage);
 // the frontend is usually served from another origin, so relax helmet's same-origin
 // resource policy for these files only

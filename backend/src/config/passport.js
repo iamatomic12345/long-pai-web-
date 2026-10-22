@@ -58,6 +58,8 @@ if (facebookEnabled) {
         clientSecret: process.env.FACEBOOK_APP_SECRET,
         callbackURL: process.env.FACEBOOK_CALLBACK_URL,
         profileFields: ["id", "displayName", "emails"],
+        // passport-facebook defaults to v3.2, which Meta has retired
+        graphAPIVersion: "v26.0",
         state: true,
       },
       (accessToken, refreshToken, profile, done) => {
