@@ -16,18 +16,18 @@ npm start               # or: npm run dev (auto-restart)
 Requires a running PostgreSQL instance reachable at `DATABASE_URL`. Every
 variable is listed (without values) in `.env.example`.
 
-## Deploying (Railway + Supabase)
+## Deploying (Render + Supabase)
 
-See the [root README](../README.md#deploy-on-railway-from-github). In short:
+See the [root README](../README.md#deploy-on-render-from-github). In short:
 
 - **Database**: Supabase Postgres — `DATABASE_URL` is its Session pooler URI
-  with `?sslmode=no-verify`. Railway runs `npm run migrate` and `npm run seed`
-  before every deploy (both are safe to re-run).
+  with `?sslmode=no-verify`. Render runs `npm run migrate` and `npm run seed`
+  in every build (both are safe to re-run).
 - **Story photos**: a *public* Supabase Storage bucket (default name
   `stories`) plus `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and optionally
   `SUPABASE_BUCKET`. Without them photos go to local `uploads/`, which is
   wiped on every deploy.
-- **Server**: `npm start` listens on `PORT` (Railway sets it). Set
+- **Server**: `npm start` listens on `PORT` (Render sets it). Set
   `NODE_ENV=production` and `FRONTEND_URL` to the deployed `index.html`.
 
 ## Serving the frontend

@@ -20,21 +20,25 @@ npm start                 # → http://localhost:4000
 
 Open http://localhost:4000 (set `FRONTEND_URL=http://localhost:4000/index.html` in `.env`).
 
-## Deploy on Railway (from GitHub)
+## Deploy on Render (from GitHub)
 
-The repo root has `package.json` + `railway.json`, so Railway builds it with no extra settings:
-`npm install` (which installs `backend/`), runs migrations and seed before each deploy,
-then `npm start`, health-checked at `/health`.
+The repo root has `render.yaml` (a Render Blueprint), so Render sets the service up itself:
+`npm install` (which installs `backend/`), then migrations and seed, then `npm start`,
+health-checked at `/health`. The blueprint fills in `NODE_ENV`, `SUPABASE_BUCKET` and
+generates `JWT_SECRET` / `SESSION_SECRET`.
 
-1. Railway → **New Project → Deploy from GitHub repo** → pick this repo (leave Root Directory empty).
-2. **Variables** — add every name from `backend/.env.example` except `PORT` (Railway sets it):
-   - `DATABASE_URL` — Supabase → Connect → **Session pooler** URI (IPv4), with `?sslmode=no-verify` appended
-   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_BUCKET=stories`
-   - `JWT_SECRET`, `SESSION_SECRET` — long random strings
-   - `NODE_ENV=production`
-   - `FRONTEND_URL=https://<your-app>.up.railway.app/index.html`
+1. Push this repo to GitHub.
+2. Render → **New → Blueprint** → pick this repo; it reads `render.yaml`.
+3. Fill in the variables it asks for:
+   - `DATABASE_URL` — Supabase → Connect → **Session pooler** URI (IPv4; Render can't reach
+     Supabase's IPv6-only direct host), with `?sslmode=no-verify` appended
+   - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`
+   - `FRONTEND_URL=https://<your-service>.onrender.com/index.html`
    - Google / Facebook keys if you use those logins; their callback URLs become
-     `https://<your-app>.up.railway.app/api/auth/google/callback` (and `/facebook/callback`)
-3. **Settings → Networking → Generate Domain** to get the public URL, then put it in `FRONTEND_URL`.
+     `https://<your-service>.onrender.com/api/auth/google/callback` (and `/facebook/callback`).
+     Leave the ones you don't use blank.
+4. **Apply**. The real URL shows at the top of the service page; if it differs from
+   `FRONTEND_URL`, correct it under **Environment** (this redeploys).
 
-Every push to `master` redeploys automatically.
+Every push to `master` redeploys automatically. The free plan sleeps after 15 minutes
+idle, so the first visit after that takes about a minute.

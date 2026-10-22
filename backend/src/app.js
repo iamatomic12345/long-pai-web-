@@ -20,6 +20,10 @@ const FRONTEND_DIR = path.join(__dirname, "..", "..", "frontend");
 
 const app = express();
 
+// behind Render's HTTPS proxy: trust X-Forwarded-Proto so the secure OAuth session
+// cookie is actually set in production
+app.set("trust proxy", 1);
+
 // browsers may call the API only from the frontend's own origin (FRONTEND_URL,
 // which also tells OAuth where to send people back). Non-browser clients are unaffected
 function frontendOrigin() {
