@@ -4,6 +4,22 @@ const { saveStoryImage, removeStoryImage } = require("../services/storyStorage")
 const STORY_POINTS = 20;
 const MAX_LIMIT = 50;
 const MAX_CAPTION = 500;
+const MAX_EMOJI = 10; // stories.emoji is VARCHAR(10)
+
+// control characters (except newline/tab) have no business in a caption
+const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
+
+// caption/emoji from the form → { caption, emoji } or { error }. They're stored as plain
+// text; the frontend renders them as React text nodes (escaped), never as HTML
+function storyFields(body) {
+  const { caption = "", emoji = "" } = body || {};
+  if (typeof caption !== "string" || typeof emoji !== "string") return { error: "ข้อมูลสตอรี่ไม่ถูกต้อง" };
+  const text = caption.replace(CONTROL_CHARS, "").trim();
+  if ([...text].length > MAX_CAPTION) return { error: `แคปชั่นยาวได้ไม่เกิน ${MAX_CAPTION} ตัวอักษร` };
+  const icon = emoji.trim();
+  if (icon.length > MAX_EMOJI) return { error: "อีโมจิไม่ถูกต้อง" };
+  return { caption: text, emoji: icon || null };
+}
 
 // image_url is the uploaded photo (Supabase Storage URL, or /uploads/... in local dev);
 // image_data only exists on stories posted before uploads
@@ -40,9 +56,9 @@ async function list(req, res) {
 async function create(req, res) {
   if (!req.file) return res.status(400).json({ error: "กรุณาแนบรูปภาพ" });
 
-  const { provinceId, caption, emoji } = req.body || {};
-  const text = (caption || "").trim();
-  if (text.length > MAX_CAPTION) return res.status(400).json({ error: `แคปชั่นยาวได้ไม่เกิน ${MAX_CAPTION} ตัวอักษร` });
+  const { provinceId } = req.body || {};
+  const fields = storyFields(req.body);
+  if (fields.error) return res.status(400).json({ error: fields.error });
 
   let resolvedProvinceId = null;
   if (provinceId !== undefined && provinceId !== null && provinceId !== "") {
@@ -70,7 +86,7 @@ async function create(req, res) {
       `INSERT INTO stories (user_id, province_id, caption, emoji, image_url)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING id`,
-      [req.user.id, resolvedProvinceId, text, emoji || null, imageUrl]
+      [req.user.id, resolvedProvinceId, fields.caption, fields.emoji, imageUrl]
     );
 
     const updated = await client.query(
@@ -147,4 +163,4 @@ async function remove(req, res) {
   if (deletedImage) await removeStoryImage(deletedImage);
 }
 
-module.exports = { list, create, remove };
+module.exports = { list, create, remove, storyFields };

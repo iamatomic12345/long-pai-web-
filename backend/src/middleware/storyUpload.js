@@ -26,7 +26,8 @@ function resolveType(file) {
 // kept in memory (≤5MB) and handed to storyStorage, which decides where it lives
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: MAX_BYTES, files: 1 },
+  // text fields are tiny (caption ≤ 500 chars, emoji, provinceId); cap them well above that
+  limits: { fileSize: MAX_BYTES, files: 1, fields: 5, fieldSize: 8 * 1024 },
   fileFilter: (req, file, cb) => {
     file.imageType = resolveType(file);
     if (!file.imageType) return cb(new UploadError("รองรับเฉพาะไฟล์ jpg, png หรือ webp"));
@@ -43,12 +44,16 @@ function storyImage(req, res, next) {
       if (err instanceof multer.MulterError && err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({ error: "ไฟล์รูปต้องมีขนาดไม่เกิน 5MB" });
       }
+      if (err instanceof multer.MulterError && err.code === "LIMIT_FIELD_VALUE") {
+        return res.status(400).json({ error: "ข้อความยาวเกินไป" });
+      }
       if (err instanceof multer.MulterError || err instanceof UploadError) {
         return res.status(400).json({ error: err instanceof UploadError ? err.message : "อัปโหลดไฟล์ไม่สำเร็จ" });
       }
       return next(err);
     }
     if (req.file) {
+      if (req.file.size === 0) return res.status(400).json({ error: "ไฟล์รูปว่างเปล่า" });
       // the declared MIME type is just a claim; check the bytes actually start like that format
       if (!IMAGE_TYPES[req.file.imageType].magic(req.file.buffer.subarray(0, 12))) {
         return res.status(400).json({ error: "รองรับเฉพาะไฟล์ jpg, png หรือ webp" });

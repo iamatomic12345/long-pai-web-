@@ -12,8 +12,10 @@ function toPublicUser(row) {
 async function register(req, res) {
   const { name, email, password } = req.body || {};
 
-  if (!name || !name.trim()) return res.status(400).json({ error: "กรุณากรอกชื่อ" });
-  if (!email || !EMAIL_RE.test(email)) return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
+  if (typeof name !== "string" || !name.trim()) return res.status(400).json({ error: "กรุณากรอกชื่อ" });
+  // the display name shows on stories; users.name is VARCHAR(100)
+  if (name.trim().length > 100) return res.status(400).json({ error: "ชื่อยาวได้ไม่เกิน 100 ตัวอักษร" });
+  if (typeof email !== "string" || email.length > 255 || !EMAIL_RE.test(email)) return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
   if (!password || password.length < 6) return res.status(400).json({ error: "รหัสผ่านอย่างน้อย 6 ตัว" });
 
   const existing = await pool.query("SELECT id FROM users WHERE email = $1", [email.trim().toLowerCase()]);
