@@ -3,7 +3,7 @@
   "private": true,
   "description": "Long Pai — frontend/ (static page) + backend/ (Express API that also serves frontend/)",
   "engines": {
-    "node": ">=20"
+    "node": "24.x"
   },
   "scripts": {
     "postinstall": "npm ci --prefix backend --omit=dev",
