@@ -9,6 +9,5 @@ const router = express.Router();
 router.get("/", asyncHandler(provinceController.list));
 router.get("/visited", requireAuth, asyncHandler(provinceController.listVisited));
 router.post("/:id/visited", writeLimiter, requireAuth, asyncHandler(provinceController.markVisited));
-router.delete("/:id/visited", requireAuth, asyncHandler(provinceController.unmarkVisited));
 
 module.exports = router;

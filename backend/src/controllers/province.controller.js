@@ -70,39 +70,4 @@ async function markVisited(req, res) {
   }
 }
 
-async function unmarkVisited(req, res) {
-  const provinceId = Number(req.params.id);
-  if (!Number.isInteger(provinceId)) return res.status(400).json({ error: "Invalid province id" });
-
-  const client = await pool.connect();
-  try {
-    await client.query("BEGIN");
-
-    const deleted = await client.query(
-      "DELETE FROM user_visited_provinces WHERE user_id = $1 AND province_id = $2 RETURNING province_id",
-      [req.user.id, provinceId]
-    );
-
-    let points;
-    if (deleted.rows.length) {
-      const updated = await client.query(
-        "UPDATE users SET points = GREATEST(0, points - $1) WHERE id = $2 RETURNING points",
-        [VISIT_POINTS, req.user.id]
-      );
-      points = updated.rows[0].points;
-    } else {
-      const current = await client.query("SELECT points FROM users WHERE id = $1", [req.user.id]);
-      points = current.rows[0].points;
-    }
-
-    await client.query("COMMIT");
-    res.json({ visited: false, points });
-  } catch (err) {
-    await client.query("ROLLBACK");
-    throw err;
-  } finally {
-    client.release();
-  }
-}
-
-module.exports = { list, listVisited, markVisited, unmarkVisited };
+module.exports = { list, listVisited, markVisited };

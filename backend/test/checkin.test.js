@@ -97,3 +97,10 @@ test("POST /api/provinces/:id/visited: 10 km is saved, 200 km and no GPS are ref
   assert.deepEqual(near.data, { visited: true, points: 50 });
   assert.equal(inserts.length, 1);
 });
+
+test("check-ins can't be undone: there is no DELETE route", () => {
+  const router = require("../src/routes/province.routes");
+  const routes = router.stack.filter((l) => l.route).map((l) => Object.keys(l.route.methods).join(",") + " " + l.route.path);
+  assert.ok(!routes.some((r) => r.startsWith("delete")), routes.join("; "));
+  assert.ok(routes.includes("post /:id/visited"));
+});
