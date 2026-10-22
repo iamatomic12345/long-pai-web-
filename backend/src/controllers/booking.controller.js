@@ -5,7 +5,7 @@ const MAX_PAX = 20;
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 const BOOKING_COLUMNS = `b.id, b.tour_id, t.name AS tour_name, t.province AS tour_province,
-  b.pax, to_char(b.date, 'YYYY-MM-DD') AS date, b.contact_name, b.phone,
+  b.pax, to_char(b.date, 'YYYY-MM-DD') AS date, b.contact_name,
   b.total, b.points_earned, b.created_at`;
 
 async function list(req, res) {
@@ -21,7 +21,8 @@ async function list(req, res) {
 }
 
 async function create(req, res) {
-  const { tourId, pax, date, contactName, phone } = req.body || {};
+  // trip booking is a demo (nothing is really booked); no phone number is collected
+  const { tourId, pax, date, contactName } = req.body || {};
 
   const paxCount = Number(pax);
   if (!Number.isInteger(paxCount) || paxCount < 1 || paxCount > MAX_PAX) {
@@ -32,8 +33,8 @@ async function create(req, res) {
   if (!parsed || Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== date) {
     return res.status(400).json({ error: "วันที่เดินทางไม่ถูกต้อง" });
   }
-  if (!contactName || !String(contactName).trim()) return res.status(400).json({ error: "กรุณากรอกชื่อผู้จอง" });
-  if (!phone || !String(phone).trim()) return res.status(400).json({ error: "กรุณากรอกเบอร์โทรศัพท์" });
+  if (typeof contactName !== "string" || !contactName.trim()) return res.status(400).json({ error: "กรุณากรอกชื่อผู้จอง" });
+  if (contactName.trim().length > 100) return res.status(400).json({ error: "ชื่อผู้จองยาวได้ไม่เกิน 100 ตัวอักษร" });
 
   const tour = await pool.query("SELECT id, price FROM tours WHERE id = $1", [String(tourId || "")]);
   if (!tour.rows.length) return res.status(404).json({ error: "Tour not found" });
@@ -47,10 +48,10 @@ async function create(req, res) {
     await client.query("BEGIN");
 
     const inserted = await client.query(
-      `INSERT INTO bookings (user_id, tour_id, pax, date, contact_name, phone, total, points_earned)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO bookings (user_id, tour_id, pax, date, contact_name, total, points_earned)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id`,
-      [req.user.id, tour.rows[0].id, paxCount, date, String(contactName).trim(), String(phone).trim(), total, pointsEarned]
+      [req.user.id, tour.rows[0].id, paxCount, date, contactName.trim(), total, pointsEarned]
     );
 
     const updated = await client.query(
