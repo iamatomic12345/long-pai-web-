@@ -31,11 +31,12 @@ async function list(req, res) {
   const limit = Math.min(MAX_LIMIT, Number(req.query.limit) || 20);
   const before = req.query.before ? new Date(req.query.before) : null;
 
+  // hidden stories (reported 3 times, awaiting an admin) are left out of the feed
   const params = [limit];
-  let where = "";
+  let where = "WHERE NOT s.hidden";
   if (before && !Number.isNaN(before.getTime())) {
     params.push(before.toISOString());
-    where = "WHERE s.created_at < $2";
+    where += " AND s.created_at < $2";
   }
 
   const result = await pool.query(
@@ -163,4 +164,72 @@ async function remove(req, res) {
   if (deletedImage) await removeStoryImage(deletedImage);
 }
 
-module.exports = { list, create, remove, storyFields };
+const HIDE_AT_REPORTS = 3;
+const MAX_REASON = 200;
+
+// reports that still count: those made since an admin last restored the story
+const OPEN_REPORTS = `(SELECT count(*) FROM story_reports r
+  WHERE r.story_id = s.id AND (s.reviewed_at IS NULL OR r.created_at > s.reviewed_at))::int`;
+
+// any logged-in user may report someone else's story once; the 3rd open report hides it
+async function report(req, res) {
+  const storyId = Number(req.params.id);
+  if (!Number.isInteger(storyId)) return res.status(400).json({ error: "Invalid story id" });
+
+  const { reason = "" } = req.body || {};
+  if (typeof reason !== "string") return res.status(400).json({ error: "เหตุผลไม่ถูกต้อง" });
+  const text = reason.replace(CONTROL_CHARS, "").trim().slice(0, MAX_REASON) || null;
+
+  const story = await pool.query("SELECT user_id FROM stories WHERE id = $1", [storyId]);
+  if (!story.rows.length) return res.status(404).json({ error: "ไม่พบสตอรี่นี้" });
+  if (story.rows[0].user_id === req.user.id) return res.status(400).json({ error: "รายงานสตอรี่ของตัวเองไม่ได้" });
+
+  const inserted = await pool.query(
+    `INSERT INTO story_reports (story_id, user_id, reason) VALUES ($1, $2, $3)
+     ON CONFLICT (story_id, user_id) DO NOTHING RETURNING story_id`,
+    [storyId, req.user.id, text]
+  );
+  if (!inserted.rows.length) return res.status(409).json({ error: "คุณรายงานสตอรี่นี้ไปแล้ว" });
+
+  // one statement, so two reports arriving together can't both miss the threshold
+  const hidden = await pool.query(
+    `UPDATE stories s SET hidden = true
+     WHERE s.id = $1 AND NOT s.hidden AND ${OPEN_REPORTS} >= $2
+     RETURNING s.id`,
+    [storyId, HIDE_AT_REPORTS]
+  );
+  res.status(201).json({ reported: true, hidden: hidden.rows.length > 0 });
+}
+
+// admin: stories that are hidden or have open reports, most reported first
+async function listReported(req, res) {
+  const result = await pool.query(
+    `SELECT * FROM (
+       SELECT ${STORY_COLUMNS}, s.hidden, ${OPEN_REPORTS} AS report_count,
+         ARRAY(SELECT r.reason FROM story_reports r
+               WHERE r.story_id = s.id AND r.reason IS NOT NULL
+                 AND (s.reviewed_at IS NULL OR r.created_at > s.reviewed_at)
+               ORDER BY r.created_at DESC) AS reasons
+       FROM stories s
+       JOIN users u ON u.id = s.user_id
+       LEFT JOIN provinces p ON p.id = s.province_id
+     ) x
+     WHERE x.hidden OR x.report_count > 0
+     ORDER BY x.report_count DESC, x.created_at DESC`
+  );
+  res.json({ stories: result.rows });
+}
+
+// admin: put a story back in the feed; reports made before now stop counting
+async function restore(req, res) {
+  const storyId = Number(req.params.id);
+  if (!Number.isInteger(storyId)) return res.status(400).json({ error: "Invalid story id" });
+  const result = await pool.query(
+    "UPDATE stories SET hidden = false, reviewed_at = now() WHERE id = $1 RETURNING id",
+    [storyId]
+  );
+  if (!result.rows.length) return res.status(404).json({ error: "ไม่พบสตอรี่นี้" });
+  res.json({ restored: true });
+}
+
+module.exports = { list, create, remove, report, listReported, restore, storyFields };
