@@ -16,7 +16,7 @@ async function register(req, res) {
   // the display name shows on stories; users.name is VARCHAR(100)
   if (name.trim().length > 100) return res.status(400).json({ error: "ชื่อยาวได้ไม่เกิน 100 ตัวอักษร" });
   if (typeof email !== "string" || email.length > 255 || !EMAIL_RE.test(email)) return res.status(400).json({ error: "อีเมลไม่ถูกต้อง" });
-  if (!password || password.length < 6) return res.status(400).json({ error: "รหัสผ่านอย่างน้อย 6 ตัว" });
+  if (typeof password !== "string" || password.length < 6) return res.status(400).json({ error: "รหัสผ่านอย่างน้อย 6 ตัว" });
 
   const existing = await pool.query("SELECT id FROM users WHERE email = $1", [email.trim().toLowerCase()]);
   if (existing.rows.length) return res.status(409).json({ error: "อีเมลนี้ถูกใช้งานแล้ว" });
@@ -36,7 +36,9 @@ async function register(req, res) {
 async function login(req, res) {
   const { email, password } = req.body || {};
 
-  if (!email || !password) return res.status(400).json({ error: "กรุณากรอกอีเมลและรหัสผ่าน" });
+  if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
+    return res.status(400).json({ error: "กรุณากรอกอีเมลและรหัสผ่าน" });
+  }
 
   const result = await pool.query(
     "SELECT id, name, email, password_hash, points FROM users WHERE email = $1",
