@@ -78,6 +78,12 @@ app.use("/uploads", express.static(UPLOAD_ROOT, {
   setHeaders: (res) => res.set("Cross-Origin-Resource-Policy", "cross-origin"),
 }));
 
+// TEMPORARY: shows the caller how the proxy chain reaches the app; removed right after
+app.get("/api/_proxy-debug", (req, res) => res.json({
+  ip: req.ip, ips: req.ips, socket: req.socket.remoteAddress,
+  xff: req.headers["x-forwarded-for"] || null, cf: req.headers["cf-connecting-ip"] || null,
+  trueClient: req.headers["true-client-ip"] || null, xReal: req.headers["x-real-ip"] || null,
+}));
 app.use("/api", apiLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/provinces", provinceRoutes);
