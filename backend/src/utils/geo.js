@@ -14,4 +14,22 @@ function haversineDistanceKm(lat1, lng1, lat2, lng2) {
   return EARTH_RADIUS_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-module.exports = { haversineDistanceKm };
+const MAX_CHECKIN_DISTANCE_KM = 50;
+
+const isCoord = (v, limit) => typeof v === "number" && Number.isFinite(v) && Math.abs(v) <= limit;
+
+// decides whether a GPS check-in counts: returns an error message, or null when it's
+// within MAX_CHECKIN_DISTANCE_KM of the province centroid. Missing or non-numeric
+// coordinates — the user's or the province's — are always refused
+function checkinError(body, province) {
+  const lat = body?.lat;
+  const lng = body?.lng;
+  if (!isCoord(lat, 90) || !isCoord(lng, 180)) return "กรุณาเปิดสิทธิ์ตำแหน่งเพื่อเช็คอิน";
+  if (!isCoord(province.latitude, 90) || !isCoord(province.longitude, 180)) {
+    return "จังหวัดนี้ยังไม่มีพิกัด เช็คอินไม่ได้ชั่วคราว";
+  }
+  const distanceKm = haversineDistanceKm(lat, lng, province.latitude, province.longitude);
+  return distanceKm > MAX_CHECKIN_DISTANCE_KM ? "ตำแหน่งไม่ตรงกับจังหวัดนี้" : null;
+}
+
+module.exports = { haversineDistanceKm, checkinError, MAX_CHECKIN_DISTANCE_KM };

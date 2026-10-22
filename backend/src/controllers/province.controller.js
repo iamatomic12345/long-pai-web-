@@ -1,8 +1,7 @@
 const { pool } = require("../config/db");
-const { haversineDistanceKm } = require("../utils/geo");
+const { checkinError } = require("../utils/geo");
 
 const VISIT_POINTS = 50;
-const MAX_CHECKIN_DISTANCE_KM = 50;
 
 async function list(req, res) {
   const result = await pool.query(
@@ -27,29 +26,16 @@ async function markVisited(req, res) {
   const provinceId = Number(req.params.id);
   if (!Number.isInteger(provinceId)) return res.status(400).json({ error: "Invalid province id" });
 
-  const lat = Number(req.body?.lat);
-  const lng = Number(req.body?.lng);
-  const hasValidCoords =
-    Number.isFinite(lat) && Number.isFinite(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180;
-  if (!hasValidCoords) {
-    return res.status(400).json({ error: "กรุณาเปิดสิทธิ์ตำแหน่งเพื่อเช็คอิน" });
-  }
-
   const province = await pool.query(
     "SELECT id, latitude, longitude FROM provinces WHERE id = $1",
     [provinceId]
   );
   if (!province.rows.length) return res.status(404).json({ error: "Province not found" });
 
-  const { latitude: provinceLat, longitude: provinceLng } = province.rows[0];
-  // provinces are always seeded with coordinates; if a row is somehow missing
-  // them, don't block check-in on a data gap that isn't the user's fault
-  if (provinceLat !== null && provinceLng !== null) {
-    const distanceKm = haversineDistanceKm(lat, lng, provinceLat, provinceLng);
-    if (distanceKm > MAX_CHECKIN_DISTANCE_KM) {
-      return res.status(400).json({ error: "ตำแหน่งไม่ตรงกับจังหวัดนี้" });
-    }
-  }
+  // the server always decides: no coordinates, or more than 50 km away, is refused
+  const error = checkinError(req.body, province.rows[0]);
+  if (error) return res.status(400).json({ error });
+  const { lat, lng } = req.body;
 
   const client = await pool.connect();
   try {
