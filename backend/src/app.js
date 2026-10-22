@@ -14,6 +14,7 @@ const favoriteRoutes = require("./routes/favorite.routes");
 const meRoutes = require("./routes/me.routes");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 const { UPLOAD_ROOT } = require("./services/storyStorage");
+const { apiLimiter } = require("./middleware/rateLimit");
 
 // the web page lives in ../frontend; serving it here puts the whole app on one origin
 const FRONTEND_DIR = path.join(__dirname, "..", "..", "frontend");
@@ -56,6 +57,7 @@ app.use("/uploads", express.static(UPLOAD_ROOT, {
   setHeaders: (res) => res.set("Cross-Origin-Resource-Policy", "cross-origin"),
 }));
 
+app.use("/api", apiLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/provinces", provinceRoutes);
 app.use("/api/stories", storyRoutes);
