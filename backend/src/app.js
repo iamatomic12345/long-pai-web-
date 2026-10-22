@@ -22,11 +22,12 @@ const FRONTEND_DIR = path.join(__dirname, "..", "..", "frontend");
 
 const app = express();
 
-// Render puts two proxies in front of the app (Cloudflare, then Render's load balancer).
-// Trusting exactly those two hops makes req.ip the visitor's address (rate limits are
-// per IP) and X-Forwarded-Proto sets the secure OAuth cookie. Anything a client puts
-// in X-Forwarded-For itself sits further left and is ignored
-app.set("trust proxy", 2);
+// On Render a request reaches the app through three proxies: Cloudflare, Render's load
+// balancer (10.x) and a local sidecar (the socket is ::1) — X-Forwarded-For arrives as
+// "<client>, <cloudflare>, <10.x>". Trusting exactly those three hops makes req.ip the
+// visitor's address (rate limits are per IP) and lets X-Forwarded-Proto set the secure
+// OAuth cookie. Anything a client writes into X-Forwarded-For sits further left and is ignored
+app.set("trust proxy", 3);
 
 // browsers may call the API only from the frontend's own origin (FRONTEND_URL,
 // which also tells OAuth where to send people back). Non-browser clients are unaffected
@@ -78,12 +79,6 @@ app.use("/uploads", express.static(UPLOAD_ROOT, {
   setHeaders: (res) => res.set("Cross-Origin-Resource-Policy", "cross-origin"),
 }));
 
-// TEMPORARY: shows the caller how the proxy chain reaches the app; removed right after
-app.get("/api/_proxy-debug", (req, res) => res.json({
-  ip: req.ip, ips: req.ips, socket: req.socket.remoteAddress,
-  xff: req.headers["x-forwarded-for"] || null, cf: req.headers["cf-connecting-ip"] || null,
-  trueClient: req.headers["true-client-ip"] || null, xReal: req.headers["x-real-ip"] || null,
-}));
 app.use("/api", apiLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/provinces", provinceRoutes);
