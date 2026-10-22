@@ -67,8 +67,10 @@ app.get("/health", async (req, res) => {
   }
 });
 
-// privacy policy and data-deletion instructions (linked from the Google/Facebook app settings)
+// terms of use, privacy policy and data-deletion instructions (the last two are also
+// linked from the Google/Facebook app settings)
 const LEGAL_DIR = path.join(__dirname, "legal");
+app.get("/terms", (req, res) => res.sendFile(path.join(LEGAL_DIR, "terms.html")));
 app.get("/privacy", (req, res) => res.sendFile(path.join(LEGAL_DIR, "privacy.html")));
 app.get("/data-deletion", (req, res) => res.sendFile(path.join(LEGAL_DIR, "data-deletion.html")));
 
