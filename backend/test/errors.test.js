@@ -42,3 +42,8 @@ test("malformed JSON gets a plain Thai 400", async () => {
   const bad = await post("/api/auth/login", "{not json");
   assert.deepEqual(bad, { status: 400, data: { error: "ข้อมูลที่ส่งมาไม่ถูกต้อง" } });
 });
+
+test("JSON bodies over 100 KB are refused with 413", async () => {
+  const big = await post("/api/auth/login", JSON.stringify({ email: "a@b.co", password: "x".repeat(200 * 1024) }));
+  assert.deepEqual(big, { status: 413, data: { error: "ข้อมูลที่ส่งมามีขนาดใหญ่เกินไป" } });
+});

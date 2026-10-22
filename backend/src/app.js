@@ -43,7 +43,8 @@ function frontendOrigin() {
 // no CSP: the bundled page unpacks its scripts at runtime (blob: URLs, in-browser Babel)
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: frontendOrigin() }));
-app.use(express.json({ limit: "5mb" }));
+// JSON bodies are small (login, check-in, booking); story photos come as multipart instead
+app.use(express.json({ limit: "100kb" }));
 app.use(passport.initialize());
 
 // pinged by Render's health check and an uptime monitor: a trivial query proves the
